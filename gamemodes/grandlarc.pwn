@@ -14,14 +14,42 @@
 #pragma tabsize 0
 
 //----------------------------------------------------------
-
+//Librerias MySQL
+#include <YSI_Data\y_iterate>
+#include <a_mysql>
+//
 #define COLOR_WHITE 		0xFFFFFFFF
 #define COLOR_NORMAL_PLAYER 0xFFBB7777
 
 #define CITY_LOS_SANTOS 	0
 #define CITY_SAN_FIERRO 	1
 #define CITY_LAS_VENTURAS 	2
+//Variables MySQL
+#define mysql_host 	"localhost"
+#define mysql_user 	"root"
+#define mysql_pass 	""
+#define mysql_database 	"gta"
 
+new PogresnaLozinka[MAX_PLAYERS];
+
+new MySQL:Database;
+
+enum {
+	d_reg,
+	d_log
+}
+
+enum PlayerInfo{
+    ID,
+    Name[25],
+    Password[65],
+    Kills,
+    Deaths,
+    Cash,
+    Score
+}
+new PI[MAX_PLAYERS][PlayerInfo];
+//
 new total_vehicles_from_files=0;
 
 // Class selection globals
@@ -52,7 +80,7 @@ public OnPlayerConnect(playerid)
 {
 	GameTextForPlayer(playerid,"~w~Grand Larceny",3000,4);
   	SendClientMessage(playerid,COLOR_WHITE,"Welcome to {88AA88}G{FFFFFF}rand {88AA88}L{FFFFFF}arceny");
-  	
+
   	// class selection init vars
   	gPlayerCitySelection[playerid] = -1;
 	gPlayerHasCitySelected[playerid] = 0;
@@ -68,23 +96,81 @@ public OnPlayerConnect(playerid)
 	RemoveBuildingForPlayer(playerid, 1775, 0.0, 0.0, 0.0, 6000.0);
 	RemoveBuildingForPlayer(playerid, 1776, 0.0, 0.0, 0.0, 6000.0);
 	*/
-	
+
 	/*
 	new ClientVersion[32];
 	GetPlayerVersion(playerid, ClientVersion, 32);
 	printf("Player %d reports client version: %s", playerid, ClientVersion);*/
-
+	//MYSQL
+		new DB_Query[115];
+	GetPlayerName(playerid, PI[playerid][Name], MAX_PLAYER_NAME);
+	mysql_format(Database, DB_Query, sizeof(DB_Query), "SELECT * FROM `users` WHERE `Username` = '%e' LIMIT 1", PI[playerid][Name]);
+	mysql_tquery(Database, DB_Query, "OnPlayerDataCheck", "i", playerid);
+	//++
+	PogresnaLozinka[playerid] = 0;
  	return 1;
 }
 
+public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
+	switch(dialogid) {
+		case d_reg: {
+			if(strlen(inputtext) < 6 || strlen(inputtext) > 24) {
+				SendClientMessage(playerid, -1, "La contraseña no puede tener menos de 6 ni más de 24 caracteres");
+				ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
+				return (false);
+			}
+			else {
+				new DB_Query[256];
+				SHA256_PassHash(inputtext, GetName(playerid), PI[playerid][Password], 65);
+		    	mysql_format(Database, DB_Query, sizeof(DB_Query), "INSERT INTO `users` (`Username`, `Password`, `Score`, `Kills`, `Cash`, `Deaths`)\
+		    	VALUES ('%e', '%s','0', '0', '0', '0')", PI[playerid][Name], PI[playerid][Password]);
+		    	mysql_tquery(Database, DB_Query);
+		    	SetSpawnInfo(playerid, 0, 26, 1958.33, 1343.12, 15.36, 269.15, 0, 0, 0, 0, 0, 0);
+		    	SpawnPlayer(playerid);
+		    	SetPlayerScore(playerid, PI[playerid][Score]);
+		    	GivePlayerMoney(playerid, PI[playerid][Cash]);
+			}
+		}
+		case d_log: {
+			if(strlen(inputtext) < 6 || strlen(inputtext) > 24) {
+				SendClientMessage(playerid, -1, "La contraseña no puede ir por debajo de 6 y más de 24 caracteres");
+				ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
+				return (false);
+			}
+			else {
+				new DB_Query[120], accpass[65];
+				SHA256_PassHash(accpass, GetName(playerid), PI[playerid][Password], sizeof(accpass));
+				if(strcmp(accpass, PI[playerid][Password]) != 0) {
+					PogresnaLozinka[playerid]++;
+					if(PogresnaLozinka[playerid] == 3) {
+						Kick(playerid);
+					}
+					else {
+						SendClientMessage(playerid, -1, "Esta contraseña no está asociada con esta cuenta");
+						ShowPlayerDialog(playerid, d_log, DIALOG_STYLE_PASSWORD, "Iniciar sesión en el servidor","Ingrese su contraseña para registrarse en un servidor","Acceso","Abandonar");
+						return (false);
+					}
+			    }
+			    mysql_format(Database, DB_Query, sizeof(DB_Query),"SELECT * FROM `users` WHERE `Username` = '%e' LIMIT 1", PI[playerid][Name]);
+		    	mysql_tquery(Database, DB_Query, "LoadAcc", "i", playerid);
+		    	//++
+		    	SetPlayerScore(playerid, PI[playerid][Score]);
+		    	GivePlayerMoney(playerid, PI[playerid][Cash]);
+		    	SetSpawnInfo(playerid, 0,26,1328.1277,-1558.4608,13.5469, 139.9262, 0,0,0,0,0,0);
+				SpawnPlayer(playerid);
+			}
+		}
+	}
+	return (true);
+}
 //----------------------------------------------------------
 
 public OnPlayerSpawn(playerid)
 {
 	if(IsPlayerNPC(playerid)) return 1;
-	
+
 	new randSpawn = 0;
-	
+
 	SetPlayerInterior(playerid,0);
 	TogglePlayerClock(playerid,0);
  	ResetPlayerMoney(playerid);
@@ -116,7 +202,7 @@ public OnPlayerSpawn(playerid)
 	}
 
 	//SetPlayerColor(playerid,COLOR_NORMAL_PLAYER);
-	
+
 	/*
 	SetPlayerSkillLevel(playerid,WEAPONSKILL_PISTOL,200);
     SetPlayerSkillLevel(playerid,WEAPONSKILL_PISTOL_SILENCED,200);
@@ -129,7 +215,7 @@ public OnPlayerSpawn(playerid)
     SetPlayerSkillLevel(playerid,WEAPONSKILL_AK47,200);
     SetPlayerSkillLevel(playerid,WEAPONSKILL_M4,200);
     SetPlayerSkillLevel(playerid,WEAPONSKILL_SNIPERRIFLE,200);*/
-    
+
     GivePlayerWeapon(playerid,WEAPON_COLT45,100);
 	//GivePlayerWeapon(playerid,WEAPON_MP5,100);
 	TogglePlayerClock(playerid, 0);
@@ -141,12 +227,16 @@ public OnPlayerSpawn(playerid)
 
 public OnPlayerDeath(playerid, killerid, reason)
 {
+
+	PI[killerid][Kills]++;
+	PI[playerid][Deaths]++;
+	SavePlayer(killerid); SavePlayer(playerid);
     new playercash;
-    
+
     // if they ever return to class selection make them city
 	// select again first
 	gPlayerHasCitySelected[playerid] = 0;
-    
+
 	if(killerid == INVALID_PLAYER_ID) {
         ResetPlayerMoney(playerid);
 	} else {
@@ -184,7 +274,7 @@ ClassSel_SetupCharSelection(playerid)
     	SetPlayerCameraPos(playerid,352.9164,194.5702,1014.1875);
 		SetPlayerCameraLookAt(playerid,349.0453,193.2271,1014.1797);
 	}
-	
+
 }
 
 //----------------------------------------------------------
@@ -234,12 +324,12 @@ ClassSel_SetupSelectedCity(playerid)
 	if(gPlayerCitySelection[playerid] == -1) {
 		gPlayerCitySelection[playerid] = CITY_LOS_SANTOS;
 	}
-	
+
 	if(gPlayerCitySelection[playerid] == CITY_LOS_SANTOS) {
 		SetPlayerInterior(playerid,0);
    		SetPlayerCameraPos(playerid,1630.6136,-2286.0298,110.0);
 		SetPlayerCameraLookAt(playerid,1887.6034,-1682.1442,47.6167);
-		
+
 		TextDrawShowForPlayer(playerid,txtLosSantos);
 		TextDrawHideForPlayer(playerid,txtSanFierro);
 		TextDrawHideForPlayer(playerid,txtLasVenturas);
@@ -248,7 +338,7 @@ ClassSel_SetupSelectedCity(playerid)
 		SetPlayerInterior(playerid,0);
    		SetPlayerCameraPos(playerid,-1300.8754,68.0546,129.4823);
 		SetPlayerCameraLookAt(playerid,-1817.9412,769.3878,132.6589);
-		
+
 		TextDrawHideForPlayer(playerid,txtLosSantos);
 		TextDrawShowForPlayer(playerid,txtSanFierro);
 		TextDrawHideForPlayer(playerid,txtLasVenturas);
@@ -257,7 +347,7 @@ ClassSel_SetupSelectedCity(playerid)
 		SetPlayerInterior(playerid,0);
    		SetPlayerCameraPos(playerid,1310.6155,1675.9182,110.7390);
 		SetPlayerCameraLookAt(playerid,2285.2944,1919.3756,68.2275);
-		
+
 		TextDrawHideForPlayer(playerid,txtLosSantos);
 		TextDrawHideForPlayer(playerid,txtSanFierro);
 		TextDrawShowForPlayer(playerid,txtLasVenturas);
@@ -296,7 +386,7 @@ ClassSel_HandleCitySelection(playerid)
 {
 	new Keys,ud,lr;
     GetPlayerKeys(playerid,Keys,ud,lr);
-    
+
     if(gPlayerCitySelection[playerid] == -1) {
 		ClassSel_SwitchToNextCity(playerid);
 		return;
@@ -304,7 +394,7 @@ ClassSel_HandleCitySelection(playerid)
 
 	// only allow new selection every ~500 ms
 	if( (GetTickCount() - gPlayerLastCitySelectionTick[playerid]) < 500 ) return;
-	
+
 	if(Keys & KEY_FIRE) {
 	    gPlayerHasCitySelected[playerid] = 1;
 	    TextDrawHideForPlayer(playerid,txtClassSelHelper);
@@ -314,7 +404,7 @@ ClassSel_HandleCitySelection(playerid)
 	    TogglePlayerSpectating(playerid,0);
 	    return;
 	}
-	
+
 	if(lr > 0) {
 	   ClassSel_SwitchToNextCity(playerid);
 	}
@@ -339,7 +429,7 @@ public OnPlayerRequestClass(playerid, classid)
     		gPlayerCitySelection[playerid] = -1;
 		}
   	}
-    
+
 	return 0;
 }
 
@@ -355,12 +445,12 @@ public OnGameModeInit()
 	DisableInteriorEnterExits();
 	SetWeather(2);
 	SetWorldTime(11);
-	
+
 	//SetObjectsDefaultCameraCol(true);
 	//UsePlayerPedAnims();
 	//ManualVehicleEngineAndLights();
 	//LimitGlobalChatRadius(300.0);
-	
+
 	ClassSel_InitTextDraws();
 
 	// Player Class
@@ -404,7 +494,7 @@ public OnGameModeInit()
 	AddPlayerClass(208,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
 	AddPlayerClass(273,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
 	AddPlayerClass(289,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
-	
+
 	AddPlayerClass(47,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
 	AddPlayerClass(48,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
 	AddPlayerClass(49,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
@@ -453,18 +543,18 @@ public OnGameModeInit()
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/lv_law.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/lv_airport.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/lv_gen.txt");
-    
+
     // SAN FIERRO
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_law.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_airport.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_gen.txt");
-    
+
     // LOS SANTOS
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/ls_law.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/ls_airport.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/ls_gen_inner.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/ls_gen_outer.txt");
-    
+
     // OTHER AREAS
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/whetstone.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/bone.txt");
@@ -472,12 +562,25 @@ public OnGameModeInit()
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/tierra.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/red_county.txt");
 
-    printf("Total vehicles from files: %d",total_vehicles_from_files);
+    printf("Total de vehículos de archivos: %d",total_vehicles_from_files);
 
+	Database = mysql_connect(mysql_host, mysql_user, mysql_pass, mysql_database);
+	if(Database == MYSQL_INVALID_HANDLE || mysql_errno(Database) != 0) {
+		print("Conexión a la base de datos MySQL falló");
+		SendRconCommand("exit");
+		return (false);
+	}
 	return 1;
 }
 
 //----------------------------------------------------------
+public OnGameModeExit() {
+	foreach(new a: Player) {
+		SavePlayer(a);
+	}
+	mysql_close(Database);
+	return (true);
+}
 
 public OnPlayerUpdate(playerid)
 {
@@ -490,19 +593,19 @@ public OnPlayerUpdate(playerid)
 	    ClassSel_HandleCitySelection(playerid);
 	    return 1;
 	}
-	
+
 	// No weapons in interiors
 	//if(GetPlayerInterior(playerid) != 0 && GetPlayerWeapon(playerid) != 0) {
 	    //SetPlayerArmedWeapon(playerid,0); // fists
 	    //return 0; // no syncing until they change their weapon
 	//}
-	
+
 	// Don't allow minigun
 	if(GetPlayerWeapon(playerid) == WEAPON_MINIGUN) {
 	    Kick(playerid);
 	    return 0;
 	}
-	
+
 	/* No jetpacks allowed
 	if(GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_USEJETPACK) {
 	    Kick(playerid);
@@ -525,5 +628,51 @@ public OnPlayerUpdate(playerid)
 
 	return 1;
 }
+public OnPlayerDisconnect(playerid, reason) {
+	SavePlayer(playerid);
+	return (true);
+}
 
+forward OnPlayerDataCheck(playerid);
+public OnPlayerDataCheck(playerid) {
+	new rows;
+	cache_get_row_count(rows);
+	if(rows > 0) {
+		cache_get_value(0, "Password", PI[playerid][Password], 65);
+		ShowPlayerDialog(playerid, d_log, DIALOG_STYLE_PASSWORD, "Iniciar sesión en el servidor","Ingrese su contraseña para registrarse en un servidor","Acceso","Abandonar");
+	}
+	else {
+		ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
+	}
+	return (true);
+}
+
+forward LoadAcc(playerid);
+public LoadAcc(playerid){
+	new rows;
+	cache_get_row_count(rows);
+	if(!rows) return (false);
+	else {
+		cache_get_value_int(0, "ID", PI[playerid][ID]);
+		cache_get_value_int(0, "Kills", PI[playerid][Kills]);
+		cache_get_value_int(0, "Deaths", PI[playerid][Deaths]);
+		cache_get_value_int(0, "Score", PI[playerid][Score]);
+		cache_get_value_int(0, "Cash", PI[playerid][Cash]);
+	}
+	return(true);
+}
+
+stock SavePlayer(playerid) {
+	new DB_Query[256];
+	mysql_format(Database, DB_Query, sizeof(DB_Query), "UPDATE `users` SET `Score` = %d, `Cash` = %d, `Kills` = %d, `Deaths` = %d WHERE `ID` = %d LIMIT 1",
+	PI[playerid][Score], PI[playerid][Cash], PI[playerid][Kills], PI[playerid][Deaths], PI[playerid][ID]);
+	mysql_tquery(Database, DB_Query);
+	return (true);
+}
+
+stock GetName(playerid) {
+	new name[MAX_PLAYER_NAME];
+	GetPlayerName(playerid, name, sizeof(name));
+	return name;
+}
 //----------------------------------------------------------
