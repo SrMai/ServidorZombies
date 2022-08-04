@@ -21,7 +21,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 {
 	new idx;
 	new cmd[256];
-	
+
 	cmd = strtok(cmdtext, idx);
 
 	if(strcmp(cmd, "/yadayada", true) == 0) {
