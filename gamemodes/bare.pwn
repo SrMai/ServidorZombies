@@ -5,8 +5,6 @@
 #include <YSI_Data\y_iterate>
 #include <a_mysql>
 
-#pragma tabsize 0
-
 //Variables MySQL
 #define mysql_host 	"localhost"
 #define mysql_user 	"root"
@@ -37,13 +35,13 @@ new PI[MAX_PLAYERS][PlayerInfo];
 main()
 {
 	print("\n----------------------------------");
-	print("  [Nombre] Zombies\n");
+	print("  Zombies\n");
 	print("----------------------------------\n");
 }
 
 public OnPlayerConnect(playerid)
 {
-	GameTextForPlayer(playerid,"~w~SA-MP: ~r~[Nombre] Zombies",5000,5);new DB_Query[115];
+	GameTextForPlayer(playerid,"~w~SA-MP: ~r~Zombies",5000,5);new DB_Query[115];
 	GetPlayerName(playerid, PI[playerid][Name], MAX_PLAYER_NAME);
 	mysql_format(Database, DB_Query, sizeof(DB_Query), "SELECT * FROM `users` WHERE `Username` = '%e' LIMIT 1", PI[playerid][Name]);
 	mysql_tquery(Database, DB_Query, "OnPlayerDataCheck", "i", playerid);
