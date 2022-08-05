@@ -151,6 +151,7 @@ public OnPlayerConnect(playerid)
 
 	GameTextForPlayer(playerid,"~w~Nombre Zombies",3000,4);
   	SendClientMessage(playerid,COLOR_WHITE,"Bienvenido a {88AA88}N{FFFFFF}ombre {88AA88}L{FFFFFF}Zombies");
+  	SendClientMessage(playerid,COLOR_WHITE,"ta entraste");
   	
   	// class selection init vars
   	gPlayerCitySelection[playerid] = -1;
