@@ -8,6 +8,9 @@
 #include <a_samp>
 #include <core>
 #include <float>
+#include <streamer>
+#include <sscanf>
+#include <a_mysql>
 #include "../include/gl_common.inc"
 //#include "../include/gl_spawns.inc"
 
@@ -39,7 +42,6 @@ new Text:txtLasVenturas;
 
 //----------------------------------------------------------
 
-#include 	<a_mysql>
 
 // MySQL configuration
 #define		MYSQL_HOST 			"localhost"

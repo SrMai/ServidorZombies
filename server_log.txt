@@ -444,3 +444,589 @@ v0.3.7-R2, (C)2005-2015 SA-MP Team
 [20:55:56] Reading File: properties/police.txt
 [20:55:56] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
 [20:55:56] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:46:03] 
+[11:46:03] Server Plugins
+[11:46:03] --------------
+[11:46:03]  Loading plugin: mysql
+[11:46:03]   Failed.
+[11:46:03]  Loading plugin: streamer
+[11:46:03] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[11:46:03]   Loaded.
+[11:46:03]  Loading plugin: sscanf
+[11:46:03] 
+
+[11:46:03]  ===============================
+
+[11:46:03]       sscanf plugin loaded.     
+
+[11:46:03]          Version:  2.8.1        
+
+[11:46:03]    (c) 2012 Alex "Y_Less" Cole  
+
+[11:46:03]  ===============================
+
+[11:46:03]   Loaded.
+[11:46:03]  Loaded 2 plugins.
+
+[11:46:03] 
+[11:46:03] Filterscripts
+[11:46:03] ---------------
+[11:46:03]   Loading filterscript 'gl_actions.amx'...
+[11:46:03]   Loading filterscript 'gl_realtime.amx'...
+[11:46:03]   Loading filterscript 'gl_property.amx'...
+[11:46:03] 
+-----------------------------------
+[11:46:03] Grand Larceny Property Filterscript		
+[11:46:03] -----------------------------------
+
+[11:46:03]   Loading filterscript 'gl_mapicon.amx'...
+[11:46:03]   Loading filterscript 'ls_elevator.amx'...
+[11:46:03]   Loading filterscript 'attachments.amx'...
+[11:46:03]   Loading filterscript 'skinchanger.amx'...
+[11:46:03] 
+--Admin Player Skin Changer Loaded
+
+[11:46:03]   Loading filterscript 'vspawner.amx'...
+[11:46:03] 
+--Admin Vehicle Spawner Loaded
+
+[11:46:03]   Loading filterscript 'ls_mall.amx'...
+[11:46:03]   Loading filterscript 'ls_beachside.amx'...
+[11:46:03] 
+
+[11:46:03]   |---------------------------------------------------
+[11:46:03]   |--- LS BeachSide Filterscript
+[11:46:03]   |--  Script v1.03
+[11:46:03]   |--  19th April 2015
+[11:46:03]   |---------------------------------------------------
+[11:46:03]   |--  LS BeachSide Building Elevator created
+[11:46:03]   |---------------------------------------------------
+[11:46:03]   Loaded 10 filterscripts.
+
+[11:46:03] Reading File: blank
+[11:46:03] Reading File: properties/houses.txt
+[11:46:03] Reading File: properties/businesses.txt
+[11:46:03] Reading File: properties/banks.txt
+[11:46:03] Reading File: properties/police.txt
+[11:46:03] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[11:46:03] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:46:58] 
+[11:46:58] Server Plugins
+[11:46:58] --------------
+[11:46:58]  Loading plugin: mysql.dll
+[11:46:58]   Failed.
+[11:46:58]  Loading plugin: streamer.dll
+[11:46:58] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[11:46:58]   Loaded.
+[11:46:58]  Loading plugin: sscanf.dll
+[11:46:58] 
+
+[11:46:58]  ===============================
+
+[11:46:58]       sscanf plugin loaded.     
+
+[11:46:58]          Version:  2.8.1        
+
+[11:46:58]    (c) 2012 Alex "Y_Less" Cole  
+
+[11:46:58]  ===============================
+
+[11:46:58]   Loaded.
+[11:46:58]  Loaded 2 plugins.
+
+[11:46:58] 
+[11:46:58] Filterscripts
+[11:46:58] ---------------
+[11:46:58]   Loading filterscript 'gl_actions.amx'...
+[11:46:58]   Loading filterscript 'gl_realtime.amx'...
+[11:46:58]   Loading filterscript 'gl_property.amx'...
+[11:46:58] 
+-----------------------------------
+[11:46:58] Grand Larceny Property Filterscript		
+[11:46:58] -----------------------------------
+
+[11:46:58]   Loading filterscript 'gl_mapicon.amx'...
+[11:46:58]   Loading filterscript 'ls_elevator.amx'...
+[11:46:58]   Loading filterscript 'attachments.amx'...
+[11:46:58]   Loading filterscript 'skinchanger.amx'...
+[11:46:58] 
+--Admin Player Skin Changer Loaded
+
+[11:46:58]   Loading filterscript 'vspawner.amx'...
+[11:46:58] 
+--Admin Vehicle Spawner Loaded
+
+[11:46:58]   Loading filterscript 'ls_mall.amx'...
+[11:46:58]   Loading filterscript 'ls_beachside.amx'...
+[11:46:58] 
+
+[11:46:58]   |---------------------------------------------------
+[11:46:58]   |--- LS BeachSide Filterscript
+[11:46:58]   |--  Script v1.03
+[11:46:58]   |--  19th April 2015
+[11:46:58]   |---------------------------------------------------
+[11:46:58]   |--  LS BeachSide Building Elevator created
+[11:46:58]   |---------------------------------------------------
+[11:46:58]   Loaded 10 filterscripts.
+
+[11:46:58] Reading File: blank
+[11:46:58] Reading File: properties/houses.txt
+[11:46:58] Reading File: properties/businesses.txt
+[11:46:58] Reading File: properties/banks.txt
+[11:46:58] Reading File: properties/police.txt
+[11:46:58] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[11:46:58] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:48:04] 
+[11:48:04] Server Plugins
+[11:48:04] --------------
+[11:48:04]  Loading plugin: mysql.dll
+[11:48:04]   Failed.
+[11:48:04]  Loading plugin: streamer.dll
+[11:48:04] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[11:48:04]   Loaded.
+[11:48:04]  Loading plugin: sscanf.dll
+[11:48:04] 
+
+[11:48:04]  ===============================
+
+[11:48:04]       sscanf plugin loaded.     
+
+[11:48:04]          Version:  2.8.1        
+
+[11:48:04]    (c) 2012 Alex "Y_Less" Cole  
+
+[11:48:04]  ===============================
+
+[11:48:04]   Loaded.
+[11:48:04]  Loaded 2 plugins.
+
+[11:48:04] 
+[11:48:04] Filterscripts
+[11:48:04] ---------------
+[11:48:04]   Loading filterscript 'gl_actions.amx'...
+[11:48:04]   Loading filterscript 'gl_realtime.amx'...
+[11:48:04]   Loading filterscript 'gl_property.amx'...
+[11:48:04] 
+-----------------------------------
+[11:48:04] Grand Larceny Property Filterscript		
+[11:48:04] -----------------------------------
+
+[11:48:04]   Loading filterscript 'gl_mapicon.amx'...
+[11:48:04]   Loading filterscript 'ls_elevator.amx'...
+[11:48:04]   Loading filterscript 'attachments.amx'...
+[11:48:04]   Loading filterscript 'skinchanger.amx'...
+[11:48:04] 
+--Admin Player Skin Changer Loaded
+
+[11:48:04]   Loading filterscript 'vspawner.amx'...
+[11:48:04] 
+--Admin Vehicle Spawner Loaded
+
+[11:48:04]   Loading filterscript 'ls_mall.amx'...
+[11:48:04]   Loading filterscript 'ls_beachside.amx'...
+[11:48:04] 
+
+[11:48:04]   |---------------------------------------------------
+[11:48:04]   |--- LS BeachSide Filterscript
+[11:48:04]   |--  Script v1.03
+[11:48:04]   |--  19th April 2015
+[11:48:04]   |---------------------------------------------------
+[11:48:04]   |--  LS BeachSide Building Elevator created
+[11:48:04]   |---------------------------------------------------
+[11:48:04]   Loaded 10 filterscripts.
+
+[11:48:04] Reading File: blank
+[11:48:04] Reading File: properties/houses.txt
+[11:48:04] Reading File: properties/businesses.txt
+[11:48:04] Reading File: properties/banks.txt
+[11:48:04] Reading File: properties/police.txt
+[11:48:04] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[11:48:04] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:53:51] 
+[11:53:51] Server Plugins
+[11:53:51] --------------
+[11:53:51]  Loading plugin: mysql.dll
+[11:53:51]   Failed.
+[11:53:51]  Loading plugin: streamer.dll
+[11:53:51] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[11:53:51]   Loaded.
+[11:53:51]  Loading plugin: sscanf.dll
+[11:53:51] 
+
+[11:53:51]  ===============================
+
+[11:53:51]       sscanf plugin loaded.     
+
+[11:53:51]          Version:  2.8.1        
+
+[11:53:51]    (c) 2012 Alex "Y_Less" Cole  
+
+[11:53:51]  ===============================
+
+[11:53:51]   Loaded.
+[11:53:51]  Loaded 2 plugins.
+
+[11:53:51] 
+[11:53:51] Filterscripts
+[11:53:51] ---------------
+[11:53:51]   Loading filterscript 'login.amx'...
+[11:53:51]   Loaded 1 filterscripts.
+
+[11:53:51] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[11:53:51] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:55:08] 
+[11:55:08] Server Plugins
+[11:55:08] --------------
+[11:55:08]  Loading plugin: mysql.dll
+[11:55:08]   Failed.
+[11:55:08]  Loading plugin: streamer.dll
+[11:55:08] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[11:55:08]   Loaded.
+[11:55:08]  Loading plugin: sscanf.dll
+[11:55:08] 
+
+[11:55:08]  ===============================
+
+[11:55:08]       sscanf plugin loaded.     
+
+[11:55:08]          Version:  2.8.1        
+
+[11:55:08]    (c) 2012 Alex "Y_Less" Cole  
+
+[11:55:08]  ===============================
+
+[11:55:08]   Loaded.
+[11:55:08]  Loaded 2 plugins.
+
+[11:55:08] 
+[11:55:08] Filterscripts
+[11:55:08] ---------------
+[11:55:08]   Loading filterscript 'loginmysql.amx'...
+[11:55:08]   Loaded 1 filterscripts.
+
+[11:55:08] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[11:55:08] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:58:14] 
+[11:58:14] Server Plugins
+[11:58:14] --------------
+[11:58:14]  Loading plugin: mysql.dll
+[11:58:14]   Failed.
+[11:58:14]  Loading plugin: streamer.dll
+[11:58:14] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[11:58:14]   Loaded.
+[11:58:14]  Loading plugin: sscanf.dll
+[11:58:14] 
+
+[11:58:14]  ===============================
+
+[11:58:14]       sscanf plugin loaded.     
+
+[11:58:14]          Version:  2.8.1        
+
+[11:58:14]    (c) 2012 Alex "Y_Less" Cole  
+
+[11:58:14]  ===============================
+
+[11:58:14]   Loaded.
+[11:58:14]  Loaded 2 plugins.
+
+[11:58:14] 
+[11:58:14] Filterscripts
+[11:58:14] ---------------
+[11:58:14]   Loading filterscript 'loginmysql.amx'...
+[11:58:14]   Loaded 1 filterscripts.
+
+[11:58:14] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[11:58:14] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[11:59:55] 
+[11:59:55] Server Plugins
+[11:59:55] --------------
+[11:59:55]  Loading plugin: mysql.dll
+[11:59:55]   Failed.
+[11:59:55]  Loading plugin: streamer.dll
+[11:59:55] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[11:59:55]   Loaded.
+[11:59:55]  Loading plugin: sscanf.dll
+[11:59:55] 
+
+[11:59:55]  ===============================
+
+[11:59:55]       sscanf plugin loaded.     
+
+[11:59:55]          Version:  2.8.1        
+
+[11:59:55]    (c) 2012 Alex "Y_Less" Cole  
+
+[11:59:55]  ===============================
+
+[11:59:55]   Loaded.
+[11:59:55]  Loaded 2 plugins.
+
+[11:59:55] 
+[11:59:55] Filterscripts
+[11:59:55] ---------------
+[11:59:55]   Loading filterscript 'loginmysql.amx'...
+[11:59:55]   Loaded 1 filterscripts.
+
+[11:59:55] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[11:59:55] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:00:26] 
+[12:00:26] Server Plugins
+[12:00:26] --------------
+[12:00:26]  Loading plugin: mysql.dll
+[12:00:26]   Failed.
+[12:00:26]  Loading plugin: streamer.dll
+[12:00:26] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[12:00:26]   Loaded.
+[12:00:26]  Loading plugin: sscanf.dll
+[12:00:26] 
+
+[12:00:26]  ===============================
+
+[12:00:26]       sscanf plugin loaded.     
+
+[12:00:26]          Version:  2.8.1        
+
+[12:00:26]    (c) 2012 Alex "Y_Less" Cole  
+
+[12:00:26]  ===============================
+
+[12:00:26]   Loaded.
+[12:00:26]  Loaded 2 plugins.
+
+[12:00:26] 
+[12:00:26] Filterscripts
+[12:00:26] ---------------
+[12:00:26]   Loading filterscript 'loginmysql.amx'...
+[12:00:26]   Loaded 1 filterscripts.
+
+[12:00:26] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[12:00:26] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:07:27] 
+[12:07:27] Server Plugins
+[12:07:27] --------------
+[12:07:27]  Loading plugin: mysql.dll
+[12:07:27]   Failed.
+[12:07:27]  Loading plugin: streamer.dll
+[12:07:27] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[12:07:27]   Loaded.
+[12:07:27]  Loading plugin: sscanf.dll
+[12:07:27] 
+
+[12:07:27]  ===============================
+
+[12:07:27]       sscanf plugin loaded.     
+
+[12:07:27]          Version:  2.8.1        
+
+[12:07:27]    (c) 2012 Alex "Y_Less" Cole  
+
+[12:07:27]  ===============================
+
+[12:07:27]   Loaded.
+[12:07:27]  Loaded 2 plugins.
+
+[12:07:27] 
+[12:07:27] Filterscripts
+[12:07:27] ---------------
+[12:07:27]   Loading filterscript 'loginmysql.amx'...
+[12:07:27]   Loaded 1 filterscripts.
+
+[12:07:27] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[12:07:27] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:08:26] 
+[12:08:26] Server Plugins
+[12:08:26] --------------
+[12:08:26]  Loading plugin: mysql
+[12:08:26]   Failed.
+[12:08:26]  Loading plugin: streamer.dll
+[12:08:26] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[12:08:26]   Loaded.
+[12:08:26]  Loading plugin: sscanf.dll
+[12:08:26] 
+
+[12:08:26]  ===============================
+
+[12:08:26]       sscanf plugin loaded.     
+
+[12:08:26]          Version:  2.8.1        
+
+[12:08:26]    (c) 2012 Alex "Y_Less" Cole  
+
+[12:08:26]  ===============================
+
+[12:08:26]   Loaded.
+[12:08:26]  Loaded 2 plugins.
+
+[12:08:26] 
+[12:08:26] Filterscripts
+[12:08:26] ---------------
+[12:08:26]   Loading filterscript 'loginmysql.amx'...
+[12:08:26]   Loaded 1 filterscripts.
+
+[12:08:26] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[12:08:26] Number of vehicle models: 0
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[12:38:44] 
+[12:38:44] Server Plugins
+[12:38:44] --------------
+[12:38:44]  Loading plugin: mysql.dll
+[12:38:44]   Failed.
+[12:38:44]  Loading plugin: streamer.dll
+[12:38:45] 
+
+*** Streamer Plugin v2.7 by Incognito loaded ***
+
+[12:38:45]   Loaded.
+[12:38:45]  Loading plugin: sscanf.dll
+[12:38:45] 
+
+[12:38:45]  ===============================
+
+[12:38:45]       sscanf plugin loaded.     
+
+[12:38:45]          Version:  2.8.1        
+
+[12:38:45]    (c) 2012 Alex "Y_Less" Cole  
+
+[12:38:45]  ===============================
+
+[12:38:45]   Loaded.
+[12:38:45]  Loaded 2 plugins.
+
+[12:38:45] 
+[12:38:45] Filterscripts
+[12:38:45] ---------------
+[12:38:45]   Loading filterscript 'loginmysql.amx'...
+[12:38:45]   Loaded 1 filterscripts.
+
+[12:38:45] Script[gamemodes/grandlarc.amx]: Run time error 19: "File or function is not found"
+[12:38:45] Number of vehicle models: 0
