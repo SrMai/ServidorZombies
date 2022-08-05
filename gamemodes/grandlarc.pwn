@@ -9,47 +9,19 @@
 #include <core>
 #include <float>
 #include "../include/gl_common.inc"
-#include "../include/gl_spawns.inc"
+//#include "../include/gl_spawns.inc"
 
 #pragma tabsize 0
 
 //----------------------------------------------------------
-//Librerias MySQL
-#include <YSI_Data\y_iterate>
-#include <a_mysql>
-//
+
 #define COLOR_WHITE 		0xFFFFFFFF
 #define COLOR_NORMAL_PLAYER 0xFFBB7777
 
 #define CITY_LOS_SANTOS 	0
 #define CITY_SAN_FIERRO 	1
 #define CITY_LAS_VENTURAS 	2
-//Variables MySQL
-#define mysql_host 	"localhost"
-#define mysql_user 	"root"
-#define mysql_pass 	""
-#define mysql_database 	"gta"
 
-new PogresnaLozinka[MAX_PLAYERS];
-
-new MySQL:Database;
-
-enum {
-	d_reg,
-	d_log
-}
-
-enum PlayerInfo{
-    ID,
-    Name[25],
-    Password[65],
-    Kills,
-    Deaths,
-    Cash,
-    Score
-}
-new PI[MAX_PLAYERS][PlayerInfo];
-//
 new total_vehicles_from_files=0;
 
 // Class selection globals
@@ -67,20 +39,117 @@ new Text:txtLasVenturas;
 
 //----------------------------------------------------------
 
+#include 	<a_mysql>
+
+// MySQL configuration
+#define		MYSQL_HOST 			"localhost"
+#define		MYSQL_USER 			"root"
+#define 	MYSQL_PASSWORD 		""
+#define		MYSQL_DATABASE 		"gta"
+
+// how many seconds until it kicks the player for taking too long to login
+#define	 SECONDS_TO_LOGIN 		30
+
+// default spawn point: Las Venturas (The High Roller)
+#define 	DEFAULT_POS_X 		1958.3783
+#define 	DEFAULT_POS_Y 		1343.1572
+#define 	DEFAULT_POS_Z 		15.3746
+#define 	DEFAULT_POS_A 		270.1425
+
+// MySQL connection handle
+new MySQL: g_SQL;
+
+// player data
+enum E_PLAYERS
+{
+	ORM: ORM_ID,
+
+	ID,
+	Name[MAX_PLAYER_NAME],
+	Password[65], // the output of SHA256_PassHash function (which was added in 0.3.7 R1 version) is always 256 bytes in length, or the equivalent of 64 Pawn cells
+	Salt[17],
+	Kills,
+	Deaths,
+	Float: X_Pos,
+	Float: Y_Pos,
+	Float: Z_Pos,
+	Float: A_Pos,
+	Interior,
+
+	bool: IsLoggedIn,
+	LoginAttempts,
+	LoginTimer
+};
+new Player[MAX_PLAYERS][E_PLAYERS];
+
+new g_MysqlRaceCheck[MAX_PLAYERS];
+
+//dialog data
+enum
+{
+	DIALOG_UNUSED,
+
+	DIALOG_LOGIN,
+	DIALOG_REGISTER
+};
+
 main()
 {
 	print("\n---------------------------------------");
-	print("Running Grand Larceny - by the SA-MP team\n");
+	print("Starting Nombre Zombies\n");
+	print("Contact: srmai.github.io\n");
 	print("---------------------------------------\n");
 }
 
 //----------------------------------------------------------
+public OnGameModeExit()
+{
+	// save all player data before closing connection
+	for (new i = 0, j = GetPlayerPoolSize(); i <= j; i++) // GetPlayerPoolSize function was added in 0.3.7 version and gets the highest playerid currently in use on the server
+	{
+		if (IsPlayerConnected(i))
+		{
+			// reason is set to 1 for normal 'Quit'
+			OnPlayerDisconnect(i, 1);
+		}
+	}
+
+	mysql_close(g_SQL);
+	return 1;
+}
 
 public OnPlayerConnect(playerid)
 {
-	GameTextForPlayer(playerid,"~w~Grand Larceny",3000,4);
-  	SendClientMessage(playerid,COLOR_WHITE,"Welcome to {88AA88}G{FFFFFF}rand {88AA88}L{FFFFFF}arceny");
+	g_MysqlRaceCheck[playerid]++;
 
+	// reset player data
+	static const empty_player[E_PLAYERS];
+	Player[playerid] = empty_player;
+
+	GetPlayerName(playerid, Player[playerid][Name], MAX_PLAYER_NAME);
+
+	// create orm instance and register all needed variables
+	new ORM: ormid = Player[playerid][ORM_ID] = orm_create("players", g_SQL);
+
+	orm_addvar_int(ormid, Player[playerid][ID], "id");
+	orm_addvar_string(ormid, Player[playerid][Name], MAX_PLAYER_NAME, "username");
+	orm_addvar_string(ormid, Player[playerid][Password], 65, "password");
+	orm_addvar_string(ormid, Player[playerid][Salt], 17, "salt");
+	orm_addvar_int(ormid, Player[playerid][Kills], "kills");
+	orm_addvar_int(ormid, Player[playerid][Deaths], "deaths");
+	orm_addvar_float(ormid, Player[playerid][X_Pos], "x");
+	orm_addvar_float(ormid, Player[playerid][Y_Pos], "y");
+	orm_addvar_float(ormid, Player[playerid][Z_Pos], "z");
+	orm_addvar_float(ormid, Player[playerid][A_Pos], "angle");
+	orm_addvar_int(ormid, Player[playerid][Interior], "interior");
+	orm_setkey(ormid, "username");
+
+	// tell the orm system to load all data, assign it to our variables and call our callback when ready
+	orm_load(ormid, "OnPlayerDataLoaded", "dd", playerid, g_MysqlRaceCheck[playerid]);
+
+	GameTextForPlayer(playerid,"~w~Nombre Zombies",3000,4);
+  	SendClientMessage(playerid,COLOR_WHITE,"Bienvenido a {88AA88}N{FFFFFF}ombre {88AA88}L{FFFFFF}Zombies");
+  	
   	// class selection init vars
   	gPlayerCitySelection[playerid] = -1;
 	gPlayerHasCitySelected[playerid] = 0;
@@ -96,86 +165,51 @@ public OnPlayerConnect(playerid)
 	RemoveBuildingForPlayer(playerid, 1775, 0.0, 0.0, 0.0, 6000.0);
 	RemoveBuildingForPlayer(playerid, 1776, 0.0, 0.0, 0.0, 6000.0);
 	*/
-
+	
 	/*
 	new ClientVersion[32];
 	GetPlayerVersion(playerid, ClientVersion, 32);
 	printf("Player %d reports client version: %s", playerid, ClientVersion);*/
-	//MYSQL
-		new DB_Query[115];
-	GetPlayerName(playerid, PI[playerid][Name], MAX_PLAYER_NAME);
-	mysql_format(Database, DB_Query, sizeof(DB_Query), "SELECT * FROM `users` WHERE `Username` = '%e' LIMIT 1", PI[playerid][Name]);
-	mysql_tquery(Database, DB_Query, "OnPlayerDataCheck", "i", playerid);
-	//++
-	PogresnaLozinka[playerid] = 0;
+
  	return 1;
 }
 
-public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
-	switch(dialogid) {
-		case d_reg: {
-			if(strlen(inputtext) < 6 || strlen(inputtext) > 24) {
-				SendClientMessage(playerid, -1, "La contraseña no puede tener menos de 6 ni más de 24 caracteres");
-				ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
-				return (false);
-			}
-			else {
-				new DB_Query[256];
-				SHA256_PassHash(inputtext, GetName(playerid), PI[playerid][Password], 65);
-		    	mysql_format(Database, DB_Query, sizeof(DB_Query), "INSERT INTO `users` (`Username`, `Password`, `Score`, `Kills`, `Cash`, `Deaths`)\
-		    	VALUES ('%e', '%s','0', '0', '0', '0')", PI[playerid][Name], PI[playerid][Password]);
-		    	mysql_tquery(Database, DB_Query);
-		    	SetSpawnInfo(playerid, 0, 26, 1958.33, 1343.12, 15.36, 269.15, 0, 0, 0, 0, 0, 0);
-		    	SpawnPlayer(playerid);
-		    	SetPlayerScore(playerid, PI[playerid][Score]);
-		    	GivePlayerMoney(playerid, PI[playerid][Cash]);
-			}
-		}
-		case d_log: {
-			if(strlen(inputtext) < 6 || strlen(inputtext) > 24) {
-				SendClientMessage(playerid, -1, "La contraseña no puede ir por debajo de 6 y más de 24 caracteres");
-				ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
-				return (false);
-			}
-			else {
-				new DB_Query[120], accpass[65];
-				SHA256_PassHash(accpass, GetName(playerid), PI[playerid][Password], sizeof(accpass));
-				if(strcmp(accpass, PI[playerid][Password]) != 0) {
-					PogresnaLozinka[playerid]++;
-					if(PogresnaLozinka[playerid] == 3) {
-						Kick(playerid);
-					}
-					else {
-						SendClientMessage(playerid, -1, "Esta contraseña no está asociada con esta cuenta");
-						ShowPlayerDialog(playerid, d_log, DIALOG_STYLE_PASSWORD, "Iniciar sesión en el servidor","Ingrese su contraseña para registrarse en un servidor","Acceso","Abandonar");
-						return (false);
-					}
-			    }
-			    mysql_format(Database, DB_Query, sizeof(DB_Query),"SELECT * FROM `users` WHERE `Username` = '%e' LIMIT 1", PI[playerid][Name]);
-		    	mysql_tquery(Database, DB_Query, "LoadAcc", "i", playerid);
-		    	//++
-		    	SetPlayerScore(playerid, PI[playerid][Score]);
-		    	GivePlayerMoney(playerid, PI[playerid][Cash]);
-		    	SetSpawnInfo(playerid, 0,26,1328.1277,-1558.4608,13.5469, 139.9262, 0,0,0,0,0,0);
-				SpawnPlayer(playerid);
-			}
-		}
+//----------------------------------------------------------
+public OnPlayerDisconnect(playerid, reason)
+{
+	g_MysqlRaceCheck[playerid]++;
+
+	UpdatePlayerData(playerid, reason);
+
+	// if the player was kicked before the time expires (30 seconds), kill the timer
+	if (Player[playerid][LoginTimer])
+	{
+		KillTimer(Player[playerid][LoginTimer]);
+		Player[playerid][LoginTimer] = 0;
 	}
-	return (true);
+
+	// sets "IsLoggedIn" to false when the player disconnects, it prevents from saving the player data twice when "gmx" is used
+	Player[playerid][IsLoggedIn] = false;
+	return 1;
 }
 //----------------------------------------------------------
 
 public OnPlayerSpawn(playerid)
 {
 	if(IsPlayerNPC(playerid)) return 1;
+	
+//	new randSpawn = 0;
+	// spawn the player to their last saved position
+	SetPlayerInterior(playerid, Player[playerid][Interior]);
+	SetPlayerPos(playerid, Player[playerid][X_Pos], Player[playerid][Y_Pos], Player[playerid][Z_Pos]);
+	SetPlayerFacingAngle(playerid, Player[playerid][A_Pos]);
 
-	new randSpawn = 0;
-
-	SetPlayerInterior(playerid,0);
+	SetCameraBehindPlayer(playerid);
+//	SetPlayerInterior(playerid,0);
 	TogglePlayerClock(playerid,0);
  	ResetPlayerMoney(playerid);
 	GivePlayerMoney(playerid, 30000);
-
+/*
 	if(CITY_LOS_SANTOS == gPlayerCitySelection[playerid]) {
  	    randSpawn = random(sizeof(gRandomSpawns_LosSantos));
  	    SetPlayerPos(playerid,
@@ -200,9 +234,10 @@ public OnPlayerSpawn(playerid)
 		 gRandomSpawns_LasVenturas[randSpawn][2]);
 		SetPlayerFacingAngle(playerid,gRandomSpawns_LasVenturas[randSpawn][3]);
 	}
+	*/
 
 	//SetPlayerColor(playerid,COLOR_NORMAL_PLAYER);
-
+	
 	/*
 	SetPlayerSkillLevel(playerid,WEAPONSKILL_PISTOL,200);
     SetPlayerSkillLevel(playerid,WEAPONSKILL_PISTOL_SILENCED,200);
@@ -215,7 +250,7 @@ public OnPlayerSpawn(playerid)
     SetPlayerSkillLevel(playerid,WEAPONSKILL_AK47,200);
     SetPlayerSkillLevel(playerid,WEAPONSKILL_M4,200);
     SetPlayerSkillLevel(playerid,WEAPONSKILL_SNIPERRIFLE,200);*/
-
+    
     GivePlayerWeapon(playerid,WEAPON_COLT45,100);
 	//GivePlayerWeapon(playerid,WEAPON_MP5,100);
 	TogglePlayerClock(playerid, 0);
@@ -227,16 +262,14 @@ public OnPlayerSpawn(playerid)
 
 public OnPlayerDeath(playerid, killerid, reason)
 {
-
-	PI[killerid][Kills]++;
-	PI[playerid][Deaths]++;
-	SavePlayer(killerid); SavePlayer(playerid);
     new playercash;
-
+    
     // if they ever return to class selection make them city
 	// select again first
+	UpdatePlayerDeaths(playerid);
+	UpdatePlayerKills(killerid);
 	gPlayerHasCitySelected[playerid] = 0;
-
+    
 	if(killerid == INVALID_PLAYER_ID) {
         ResetPlayerMoney(playerid);
 	} else {
@@ -249,6 +282,63 @@ public OnPlayerDeath(playerid, killerid, reason)
    	return 1;
 }
 
+//----------------------------------------------------------
+public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
+{
+	switch (dialogid)
+	{
+		case DIALOG_UNUSED: return 1; // Useful for dialogs that contain only information and we do nothing depending on whether they responded or not
+
+		case DIALOG_LOGIN:
+		{
+			if (!response) return Kick(playerid);
+
+			new hashed_pass[65];
+			SHA256_PassHash(inputtext, Player[playerid][Salt], hashed_pass, 65);
+
+			if (strcmp(hashed_pass, Player[playerid][Password]) == 0)
+			{
+				//correct password, spawn the player
+				ShowPlayerDialog(playerid, DIALOG_UNUSED, DIALOG_STYLE_MSGBOX, "Login", "You have been successfully logged in.", "Okay", "");
+
+				KillTimer(Player[playerid][LoginTimer]);
+				Player[playerid][LoginTimer] = 0;
+				Player[playerid][IsLoggedIn] = true;
+
+				// spawn the player to their last saved position after login
+				SetSpawnInfo(playerid, NO_TEAM, 0, Player[playerid][X_Pos], Player[playerid][Y_Pos], Player[playerid][Z_Pos], Player[playerid][A_Pos], 0, 0, 0, 0, 0, 0);
+				SpawnPlayer(playerid);
+			}
+			else
+			{
+				Player[playerid][LoginAttempts]++;
+
+				if (Player[playerid][LoginAttempts] >= 3)
+				{
+					ShowPlayerDialog(playerid, DIALOG_UNUSED, DIALOG_STYLE_MSGBOX, "Login", "You have mistyped your password too often (3 times).", "Okay", "");
+					DelayedKick(playerid);
+				}
+				else ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "Login", "Wrong password!\nPlease enter your password in the field below:", "Login", "Abort");
+			}
+		}
+		case DIALOG_REGISTER:
+		{
+			if (!response) return Kick(playerid);
+
+			if (strlen(inputtext) <= 5) return ShowPlayerDialog(playerid, DIALOG_REGISTER, DIALOG_STYLE_PASSWORD, "Registration", "Your password must be longer than 5 characters!\nPlease enter your password in the field below:", "Register", "Abort");
+
+			// 16 random characters from 33 to 126 (in ASCII) for the salt
+			for (new i = 0; i < 16; i++) Player[playerid][Salt][i] = random(94) + 33;
+			SHA256_PassHash(inputtext, Player[playerid][Salt], Player[playerid][Password], 65);
+
+			// sends an INSERT query
+			orm_save(Player[playerid][ORM_ID], "OnPlayerRegister", "d", playerid);
+		}
+
+		default: return 0; // dialog ID was not found, search in other scripts
+	}
+	return 1;
+}
 //----------------------------------------------------------
 
 ClassSel_SetupCharSelection(playerid)
@@ -274,7 +364,7 @@ ClassSel_SetupCharSelection(playerid)
     	SetPlayerCameraPos(playerid,352.9164,194.5702,1014.1875);
 		SetPlayerCameraLookAt(playerid,349.0453,193.2271,1014.1797);
 	}
-
+	
 }
 
 //----------------------------------------------------------
@@ -324,12 +414,12 @@ ClassSel_SetupSelectedCity(playerid)
 	if(gPlayerCitySelection[playerid] == -1) {
 		gPlayerCitySelection[playerid] = CITY_LOS_SANTOS;
 	}
-
+	
 	if(gPlayerCitySelection[playerid] == CITY_LOS_SANTOS) {
 		SetPlayerInterior(playerid,0);
    		SetPlayerCameraPos(playerid,1630.6136,-2286.0298,110.0);
 		SetPlayerCameraLookAt(playerid,1887.6034,-1682.1442,47.6167);
-
+		
 		TextDrawShowForPlayer(playerid,txtLosSantos);
 		TextDrawHideForPlayer(playerid,txtSanFierro);
 		TextDrawHideForPlayer(playerid,txtLasVenturas);
@@ -338,7 +428,7 @@ ClassSel_SetupSelectedCity(playerid)
 		SetPlayerInterior(playerid,0);
    		SetPlayerCameraPos(playerid,-1300.8754,68.0546,129.4823);
 		SetPlayerCameraLookAt(playerid,-1817.9412,769.3878,132.6589);
-
+		
 		TextDrawHideForPlayer(playerid,txtLosSantos);
 		TextDrawShowForPlayer(playerid,txtSanFierro);
 		TextDrawHideForPlayer(playerid,txtLasVenturas);
@@ -347,7 +437,7 @@ ClassSel_SetupSelectedCity(playerid)
 		SetPlayerInterior(playerid,0);
    		SetPlayerCameraPos(playerid,1310.6155,1675.9182,110.7390);
 		SetPlayerCameraLookAt(playerid,2285.2944,1919.3756,68.2275);
-
+		
 		TextDrawHideForPlayer(playerid,txtLosSantos);
 		TextDrawHideForPlayer(playerid,txtSanFierro);
 		TextDrawShowForPlayer(playerid,txtLasVenturas);
@@ -386,7 +476,7 @@ ClassSel_HandleCitySelection(playerid)
 {
 	new Keys,ud,lr;
     GetPlayerKeys(playerid,Keys,ud,lr);
-
+    
     if(gPlayerCitySelection[playerid] == -1) {
 		ClassSel_SwitchToNextCity(playerid);
 		return;
@@ -394,7 +484,7 @@ ClassSel_HandleCitySelection(playerid)
 
 	// only allow new selection every ~500 ms
 	if( (GetTickCount() - gPlayerLastCitySelectionTick[playerid]) < 500 ) return;
-
+	
 	if(Keys & KEY_FIRE) {
 	    gPlayerHasCitySelected[playerid] = 1;
 	    TextDrawHideForPlayer(playerid,txtClassSelHelper);
@@ -404,7 +494,7 @@ ClassSel_HandleCitySelection(playerid)
 	    TogglePlayerSpectating(playerid,0);
 	    return;
 	}
-
+	
 	if(lr > 0) {
 	   ClassSel_SwitchToNextCity(playerid);
 	}
@@ -429,7 +519,7 @@ public OnPlayerRequestClass(playerid, classid)
     		gPlayerCitySelection[playerid] = -1;
 		}
   	}
-
+    
 	return 0;
 }
 
@@ -437,6 +527,20 @@ public OnPlayerRequestClass(playerid, classid)
 
 public OnGameModeInit()
 {
+
+	new MySQLOpt: option_id = mysql_init_options();
+	mysql_set_option(option_id, AUTO_RECONNECT, true); // it automatically reconnects when loosing connection to mysql server
+	g_SQL = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, option_id); // AUTO_RECONNECT is enabled for this connection handle only
+	if (g_SQL == MYSQL_INVALID_HANDLE || mysql_errno(g_SQL) != 0)
+	{
+		print("MySQL connection failed. Server is shutting down.");
+		SendRconCommand("exit"); // close the server if there is no connection
+		return 1;
+	}
+	print("MySQL connection is successful.");
+
+	// if the table has been created, the "SetupPlayerTable" function does not have any purpose so you may remove it completely
+	SetupPlayerTable();
 	SetGameModeText("Grand Larceny");
 	ShowPlayerMarkers(PLAYER_MARKERS_MODE_GLOBAL);
 	ShowNameTags(1);
@@ -445,12 +549,12 @@ public OnGameModeInit()
 	DisableInteriorEnterExits();
 	SetWeather(2);
 	SetWorldTime(11);
-
+	
 	//SetObjectsDefaultCameraCol(true);
 	//UsePlayerPedAnims();
 	//ManualVehicleEngineAndLights();
 	//LimitGlobalChatRadius(300.0);
-
+	
 	ClassSel_InitTextDraws();
 
 	// Player Class
@@ -494,7 +598,7 @@ public OnGameModeInit()
 	AddPlayerClass(208,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
 	AddPlayerClass(273,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
 	AddPlayerClass(289,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
-
+	
 	AddPlayerClass(47,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
 	AddPlayerClass(48,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
 	AddPlayerClass(49,1759.0189,-1898.1260,13.5622,266.4503,-1,-1,-1,-1,-1,-1);
@@ -543,18 +647,18 @@ public OnGameModeInit()
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/lv_law.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/lv_airport.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/lv_gen.txt");
-
+    
     // SAN FIERRO
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_law.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_airport.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/sf_gen.txt");
-
+    
     // LOS SANTOS
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/ls_law.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/ls_airport.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/ls_gen_inner.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/ls_gen_outer.txt");
-
+    
     // OTHER AREAS
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/whetstone.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/bone.txt");
@@ -562,25 +666,12 @@ public OnGameModeInit()
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/tierra.txt");
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/red_county.txt");
 
-    printf("Total de vehículos de archivos: %d",total_vehicles_from_files);
+    printf("Total vehiculos cargados desde los archivos: %d",total_vehicles_from_files);
 
-	Database = mysql_connect(mysql_host, mysql_user, mysql_pass, mysql_database);
-	if(Database == MYSQL_INVALID_HANDLE || mysql_errno(Database) != 0) {
-		print("Conexión a la base de datos MySQL falló");
-		SendRconCommand("exit");
-		return (false);
-	}
 	return 1;
 }
 
 //----------------------------------------------------------
-public OnGameModeExit() {
-	foreach(new a: Player) {
-		SavePlayer(a);
-	}
-	mysql_close(Database);
-	return (true);
-}
 
 public OnPlayerUpdate(playerid)
 {
@@ -593,19 +684,19 @@ public OnPlayerUpdate(playerid)
 	    ClassSel_HandleCitySelection(playerid);
 	    return 1;
 	}
-
+	
 	// No weapons in interiors
 	//if(GetPlayerInterior(playerid) != 0 && GetPlayerWeapon(playerid) != 0) {
 	    //SetPlayerArmedWeapon(playerid,0); // fists
 	    //return 0; // no syncing until they change their weapon
 	//}
-
+	
 	// Don't allow minigun
 	if(GetPlayerWeapon(playerid) == WEAPON_MINIGUN) {
 	    Kick(playerid);
 	    return 0;
 	}
-
+	
 	/* No jetpacks allowed
 	if(GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_USEJETPACK) {
 	    Kick(playerid);
@@ -628,51 +719,136 @@ public OnPlayerUpdate(playerid)
 
 	return 1;
 }
-public OnPlayerDisconnect(playerid, reason) {
-	SavePlayer(playerid);
-	return (true);
-}
 
-forward OnPlayerDataCheck(playerid);
-public OnPlayerDataCheck(playerid) {
-	new rows;
-	cache_get_row_count(rows);
-	if(rows > 0) {
-		cache_get_value(0, "Password", PI[playerid][Password], 65);
-		ShowPlayerDialog(playerid, d_log, DIALOG_STYLE_PASSWORD, "Iniciar sesión en el servidor","Ingrese su contraseña para registrarse en un servidor","Acceso","Abandonar");
-	}
-	else {
-		ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
-	}
-	return (true);
-}
-
-forward LoadAcc(playerid);
-public LoadAcc(playerid){
-	new rows;
-	cache_get_row_count(rows);
-	if(!rows) return (false);
-	else {
-		cache_get_value_int(0, "ID", PI[playerid][ID]);
-		cache_get_value_int(0, "Kills", PI[playerid][Kills]);
-		cache_get_value_int(0, "Deaths", PI[playerid][Deaths]);
-		cache_get_value_int(0, "Score", PI[playerid][Score]);
-		cache_get_value_int(0, "Cash", PI[playerid][Cash]);
-	}
-	return(true);
-}
-
-stock SavePlayer(playerid) {
-	new DB_Query[256];
-	mysql_format(Database, DB_Query, sizeof(DB_Query), "UPDATE `users` SET `Score` = %d, `Cash` = %d, `Kills` = %d, `Deaths` = %d WHERE `ID` = %d LIMIT 1",
-	PI[playerid][Score], PI[playerid][Cash], PI[playerid][Kills], PI[playerid][Deaths], PI[playerid][ID]);
-	mysql_tquery(Database, DB_Query);
-	return (true);
-}
-
-stock GetName(playerid) {
-	new name[MAX_PLAYER_NAME];
-	GetPlayerName(playerid, name, sizeof(name));
-	return name;
-}
 //----------------------------------------------------------
+
+forward OnPlayerDataLoaded(playerid, race_check);
+public OnPlayerDataLoaded(playerid, race_check)
+{
+	/*	race condition check:
+		player A connects -> SELECT query is fired -> this query takes very long
+		while the query is still processing, player A with playerid 2 disconnects
+		player B joins now with playerid 2 -> our laggy SELECT query is finally finished, but for the wrong player
+
+		what do we do against it?
+		we create a connection count for each playerid and increase it everytime the playerid connects or disconnects
+		we also pass the current value of the connection count to our OnPlayerDataLoaded callback
+		then we check if current connection count is the same as connection count we passed to the callback
+		if yes, everything is okay, if not, we just kick the player
+	*/
+	if (race_check != g_MysqlRaceCheck[playerid]) return Kick(playerid);
+
+	orm_setkey(Player[playerid][ORM_ID], "id");
+
+	new string[115];
+	switch (orm_errno(Player[playerid][ORM_ID]))
+	{
+		case ERROR_OK:
+		{
+			format(string, sizeof string, "This account (%s) is registered. Please login by entering your password in the field below:", Player[playerid][Name]);
+			ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "Login", string, "Login", "Abort");
+
+			// from now on, the player has 30 seconds to login
+			Player[playerid][LoginTimer] = SetTimerEx("OnLoginTimeout", SECONDS_TO_LOGIN * 1000, false, "d", playerid);
+		}
+		case ERROR_NO_DATA:
+		{
+			format(string, sizeof string, "Welcome %s, you can register by entering your password in the field below:", Player[playerid][Name]);
+			ShowPlayerDialog(playerid, DIALOG_REGISTER, DIALOG_STYLE_PASSWORD, "Registration", string, "Register", "Abort");
+		}
+	}
+	return 1;
+}
+
+forward OnLoginTimeout(playerid);
+public OnLoginTimeout(playerid)
+{
+	// reset the variable that stores the timerid
+	Player[playerid][LoginTimer] = 0;
+
+	ShowPlayerDialog(playerid, DIALOG_UNUSED, DIALOG_STYLE_MSGBOX, "Login", "You have been kicked for taking too long to login successfully to your account.", "Okay", "");
+	DelayedKick(playerid);
+	return 1;
+}
+
+forward OnPlayerRegister(playerid);
+public OnPlayerRegister(playerid)
+{
+	ShowPlayerDialog(playerid, DIALOG_UNUSED, DIALOG_STYLE_MSGBOX, "Registration", "Account successfully registered, you have been automatically logged in.", "Okay", "");
+
+	Player[playerid][IsLoggedIn] = true;
+
+	Player[playerid][X_Pos] = DEFAULT_POS_X;
+	Player[playerid][Y_Pos] = DEFAULT_POS_Y;
+	Player[playerid][Z_Pos] = DEFAULT_POS_Z;
+	Player[playerid][A_Pos] = DEFAULT_POS_A;
+
+	SetSpawnInfo(playerid, NO_TEAM, 0, Player[playerid][X_Pos], Player[playerid][Y_Pos], Player[playerid][Z_Pos], Player[playerid][A_Pos], 0, 0, 0, 0, 0, 0);
+	SpawnPlayer(playerid);
+	return 1;
+}
+
+forward _KickPlayerDelayed(playerid);
+public _KickPlayerDelayed(playerid)
+{
+	Kick(playerid);
+	return 1;
+}
+
+
+//-----------------------------------------------------
+
+DelayedKick(playerid, time = 500)
+{
+	SetTimerEx("_KickPlayerDelayed", time, false, "d", playerid);
+	return 1;
+}
+
+SetupPlayerTable()
+{
+	mysql_tquery(g_SQL, "CREATE TABLE IF NOT EXISTS `players` (`id` int(11) NOT NULL AUTO_INCREMENT,`username` varchar(24) NOT NULL,`password` char(64) NOT NULL,`salt` char(16) NOT NULL,`kills` mediumint(8) NOT NULL DEFAULT '0',`deaths` mediumint(8) NOT NULL DEFAULT '0',`x` float NOT NULL DEFAULT '0',`y` float NOT NULL DEFAULT '0',`z` float NOT NULL DEFAULT '0',`angle` float NOT NULL DEFAULT '0',`interior` tinyint(3) NOT NULL DEFAULT '0', PRIMARY KEY (`id`), UNIQUE KEY `username` (`username`))");
+	return 1;
+}
+
+UpdatePlayerData(playerid, reason)
+{
+	if (Player[playerid][IsLoggedIn] == false) return 0;
+
+	// if the client crashed, it's not possible to get the player's position in OnPlayerDisconnect callback
+	// so we will use the last saved position (in case of a player who registered and crashed/kicked, the position will be the default spawn point)
+	if (reason == 1)
+	{
+		GetPlayerPos(playerid, Player[playerid][X_Pos], Player[playerid][Y_Pos], Player[playerid][Z_Pos]);
+		GetPlayerFacingAngle(playerid, Player[playerid][A_Pos]);
+	}
+
+	// it is important to store everything in the variables registered in ORM instance
+	Player[playerid][Interior] = GetPlayerInterior(playerid);
+
+	// orm_save sends an UPDATE query
+	orm_save(Player[playerid][ORM_ID]);
+	orm_destroy(Player[playerid][ORM_ID]);
+	return 1;
+}
+
+UpdatePlayerDeaths(playerid)
+{
+	if (Player[playerid][IsLoggedIn] == false) return 0;
+
+	Player[playerid][Deaths]++;
+
+	orm_update(Player[playerid][ORM_ID]);
+	return 1;
+}
+
+UpdatePlayerKills(killerid)
+{
+	// we must check before if the killer wasn't valid (connected) player to avoid run time error 4
+	if (killerid == INVALID_PLAYER_ID) return 0;
+	if (Player[killerid][IsLoggedIn] == false) return 0;
+
+	Player[killerid][Kills]++;
+
+	orm_update(Player[killerid][ORM_ID]);
+	return 1;
+}

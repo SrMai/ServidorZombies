@@ -5,12 +5,22 @@
 #define mysql_host 	"localhost"
 #define mysql_user 	"root"
 #define mysql_pass 	""
-#define mysql_database 	"test_database"
+#define mysql_database 	"gta"
 
 new PogresnaLozinka[MAX_PLAYERS];
 
 new MySQL:Database;
-
+//Skin random
+new RandomSkinMasculino[11] =
+{
+    // Positions, (X, Y, Z and Facing Angle)
+    {1,2,8,14,19,21,26,34,44,127,156,158}
+};
+new RandomSkinFemenino[11] =
+{
+    // Positions, (X, Y, Z and Facing Angle)
+    {63,64,75,93,198,245,218,215}
+};
 enum {
 	d_reg,
 	d_log
@@ -20,6 +30,7 @@ enum PlayerInfo{
     ID,
     Name[25],
     Password[65],
+    Sexo[10],
     Kills,
     Deaths,
     Cash,
@@ -28,16 +39,17 @@ enum PlayerInfo{
 new PI[MAX_PLAYERS][PlayerInfo];
 
 main() {
-	print("Mod je uspjesno ucitan");
+	print("Cargando login y registro");
 }
 
 public OnGameModeInit() {
 	Database = mysql_connect(mysql_host, mysql_user, mysql_pass, mysql_database);
 	if(Database == MYSQL_INVALID_HANDLE || mysql_errno(Database) != 0) {
-		print("Connecting to MySQL database failed");
+		print("Conexión a la base de datos MySQL fallo");
 		SendRconCommand("exit");
 		return (false);
 	}
+	print("Conexión a la base de datos MySQL Exitosa");
 	return (true);
 }
 
@@ -63,15 +75,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 	switch(dialogid) {
 		case d_reg: {
 			if(strlen(inputtext) < 6 || strlen(inputtext) > 24) {
-				SendClientMessage(playerid, -1, "Lozinka ne moze ici ispod 6 i iznad 24 karaktera");
-				ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registracija na server","Molimo vas unesite vasu lozinku kako bi ste se registrirali na server","Register","Quit");
+				SendClientMessage(playerid, -1, "La contraseña no puede ir por debajo de 6 y más de 24 caracteres");
+				ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
 				return (false);
 			}
 			else {
 				new DB_Query[256];
 				SHA256_PassHash(inputtext, GetName(playerid), PI[playerid][Password], 65);
-		    	mysql_format(Database, DB_Query, sizeof(DB_Query), "INSERT INTO `users` (`Username`, `Password`, `Score`, `Kills`, `Cash`, `Deaths`)\
-		    	VALUES ('%e', '%s','0', '0', '0', '0')", PI[playerid][Name], PI[playerid][Password]);
+		    	mysql_format(Database, DB_Query, sizeof(DB_Query), "INSERT INTO `users` (`Username`, `Password`, `Sexo`, `Score`, `Kills`, `Cash`, `Deaths`)\
+		    	VALUES ('%e', '%s', '%s','0', '0', '0', '0')", PI[playerid][Name], PI[playerid][Password], PI[playerid][Sexo]);
 		    	mysql_tquery(Database, DB_Query);
 		    	SetSpawnInfo(playerid, 0, 26, 1958.33, 1343.12, 15.36, 269.15, 0, 0, 0, 0, 0, 0);
 		    	SpawnPlayer(playerid);
@@ -81,8 +93,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		}
 		case d_log: {
 			if(strlen(inputtext) < 6 || strlen(inputtext) > 24) {
-				SendClientMessage(playerid, -1, "Lozinka ne moze ici ispod 6 i iznad 24 karaktera");
-				ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registracija na server","Molimo vas unesite vasu lozinku kako bi ste se registrirali na server","Register","Quit");
+				SendClientMessage(playerid, -1, "La contraseña no puede ir por debajo de 6 y más de 24 caracteres");
+				ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
 				return (false);
 			}
 			else {
@@ -94,8 +106,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 						Kick(playerid);
 					}
 					else {
-						SendClientMessage(playerid, -1, "Ta lozinka nije povezana sa tim racunom");
-						ShowPlayerDialog(playerid, d_log, DIALOG_STYLE_PASSWORD, "Prijava na server","Molimo vas unesite vasu lozinku kako bi ste se prijavili na server","Login","Quit");
+						SendClientMessage(playerid, -1, "La contraseña no puede ir por debajo de 6 y más de 24 caracteres");
+						ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
 						return (false);
 					}
 			    }
@@ -111,6 +123,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 	}
 	return (true);
 }
+
+public OnPlayerSpawn(playerid)
+{
+	if(GetPVarInt(playerid, "PuedeIngresar") == 0)
+	{
+	Kick(playerid);
+	}
+	//SetPlayerSkin(playerid, RandomSkinMasculino[rand][11);
+	return 1;
+}
+
 
 public OnPlayerDeath(playerid, killerid, reason) {
 	PI[killerid][Kills]++;
@@ -130,10 +153,10 @@ public OnPlayerDataCheck(playerid) {
 	cache_get_row_count(rows);
 	if(rows > 0) {
 		cache_get_value(0, "Password", PI[playerid][Password], 65);
-		ShowPlayerDialog(playerid, d_log, DIALOG_STYLE_PASSWORD, "Prijava na server","Molimo vas unesite vasu lozinku kako bi ste se prijavili na server","Login","Quit");	
+		ShowPlayerDialog(playerid, d_log, DIALOG_STYLE_PASSWORD, "Iniciar sesión en el servidor","Ingrese su contraseña para registrarse en un servidor","Acceso","Abandonar");
 	}
 	else {
-		ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registracija na server","Molimo vas unesite vasu lozinku kako bi ste se registrirali na server","Register","Quit");	
+		ShowPlayerDialog(playerid, d_reg, DIALOG_STYLE_PASSWORD, "Registro del servidor","Ingrese su contraseña para registrarse en el servidor","Registro","Abandonar");
 	}
 	return (true);
 }
